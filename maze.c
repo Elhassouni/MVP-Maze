@@ -1,85 +1,46 @@
+// Using SDL and standard IO
 #include <SDL2/SDL.h>
-#include <stdbool.h>
-#include <math.h>
+#include <stdio.h>
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-#define MAP_WIDTH 10
-#define MAP_HEIGHT 10
-#define TILE_SIZE 64
+// Screen dimension constants & the maze window size
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
-int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-};
+// Main function
+int main(int argc, char* args[]) {
+    // The window we'll be rendering to
+    SDL_Window* window = NULL;
 
-typedef struct {
-    float x, y;
-    float angle;
-} Player;
+    // The surface contained by the window
+    SDL_Surface* screenSurface = NULL;
 
-void drawWalls(SDL_Renderer *renderer, Player *player) {
-    for (int x = 0; x < SCREEN_WIDTH; x++) {
-        float rayAngle = (player->angle - M_PI / 6.0) + ((float)x / SCREEN_WIDTH) * (M_PI / 3.0);
-        float rayX = player->x;
-        float rayY = player->y;
-        float rayDirX = cos(rayAngle);
-        float rayDirY = sin(rayAngle);
+    // Initialize SDL
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+    } else {
+        // Create window
+        window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        if (window == NULL) {
+            printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        } else {
+            // Get window surface
+            screenSurface = SDL_GetWindowSurface(window);
 
-        bool hit = false;
-        while (!hit) {
-            rayX += rayDirX;
-            rayY += rayDirY;
+            // Fill the surface white
+            SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
 
-            int mapX = (int)(rayX / TILE_SIZE);
-            int mapY = (int)(rayY / TILE_SIZE);
+            // Update the surface
+            SDL_UpdateWindowSurface(window);
 
-            if (map[mapY][mapX] == 1) {
-                hit = true;
-                float distance = sqrt((rayX - player->x) * (rayX - player->x) + (rayY - player->y) * (rayY - player->y));
-                int lineHeight = (int)(SCREEN_HEIGHT / distance);
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-                SDL_RenderDrawLine(renderer, x, (SCREEN_HEIGHT - lineHeight) / 2, x, (SCREEN_HEIGHT + lineHeight) / 2);
-            }
+            // Wait two seconds
+            SDL_Delay(1);
         }
     }
-}
 
-int main(int argc, char *argv[]) {
-    SDL_Init(SDL_INIT_VIDEO);
-
-    SDL_Window *window = SDL_CreateWindow("Raycasting Maze", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-
-    Player player = {320, 240, 0};
-
-    bool running = true;
-    SDL_Event event;
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = false;
-            }
-        }
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        drawWalls(renderer, &player);
-
-        SDL_RenderPresent(renderer);
-    }
-
-    SDL_DestroyRenderer(renderer);
+    // Destroy window
     SDL_DestroyWindow(window);
+
+    // Quit SDL subsystems
     SDL_Quit();
 
     return 0;
