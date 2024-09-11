@@ -2,23 +2,22 @@
 #define HEADER_H
 
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 // Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+extern const int SCREEN_WIDTH;
+extern const int SCREEN_HEIGHT;
 
-// My function declarations
+// Function declarations
 bool init();
 bool loadMedia();
 void close();
+void drawWalls(SDL_Renderer *renderer);
 
 // The window we'll be rendering to
 extern SDL_Window* gWindow;
 
-// The surface contained by the window
-extern SDL_Surface* gScreenSurface;
-
-// The image we will load and show on the screen
-extern SDL_Surface* gHelloWorld;
+// The renderer contained by the window
+extern SDL_Renderer* gRenderer;
 
 #endif // HEADER_H
